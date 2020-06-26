@@ -39,6 +39,7 @@ static char THIS_FILE[] = __FILE__;
 BEGIN_MESSAGE_MAP(CDockTrayPalette, CDockablePane)
     ON_WM_DESTROY()
     ON_WM_SIZE()
+    ON_WM_WINDOWPOSCHANGED()  // TEST INTERCEPT
 END_MESSAGE_MAP()
 
 IMPLEMENT_DYNAMIC(CDockTrayPalette, CDockablePane);
@@ -101,3 +102,75 @@ void CDockTrayPalette::OnDestroy()
     m_pChildWnd = NULL;
     CDockablePane::OnDestroy();
 }
+
+/// TESTING INTERCEPTS...
+CSize CDockTrayPalette::CalcFixedLayout(BOOL bStretch, BOOL bHorz)
+{
+    ATLTRACE2(traceAppMsg, 0, "CDockTrayPalette%s::CalcFixedLayout(bStretch=%u, bHorz=%d) called...\n", (LPCSTR)m_trayID, bStretch, bHorz);
+    CSize ret = CDockablePane::CalcFixedLayout(bStretch, bHorz);
+    ATLTRACE2(traceAppMsg, 0, "...CDockTrayPalette%s::CalcFixedLayout(...) returns CSize(%d, %d).\n", (LPCSTR)m_trayID, ret.cx, ret.cy);
+    return ret;
+    //return CDockablePane::CalcFixedLayout(bStretch, bHorz);
+}
+
+BOOL CDockTrayPalette::IsResizable() const
+{
+    ATLTRACE2(traceAppMsg, 0, "CDockTrayPalette%s::IsResizable() called...\n", (LPCSTR)m_trayID);
+    BOOL bRet = CDockablePane::IsResizable();
+    ATLTRACE2(traceAppMsg, 0, "...CDockTrayPalette%s::IsResizable() returns BOOL(%d)\n", (LPCSTR)m_trayID, bRet);
+    return bRet;
+    //return CDockablePane::IsResizable();
+}
+
+CSize CDockTrayPalette::CalcAvailableSize(CRect rectRequired)
+{
+    ATLTRACE2(traceAppMsg, 0, "CDockTrayPalette%s::CalcAvailableSize(rectRequired={%d, %d, %d, $d}) called...\n", (LPCSTR)m_trayID,
+        rectRequired.top, rectRequired.left, rectRequired.bottom, rectRequired.right);
+    CSize ret = CDockablePane::CalcAvailableSize(rectRequired);
+    ATLTRACE2(traceAppMsg, 0, "...CDockTrayPalette%s::CalcAvailableSize(...) returns CSize(%d, %d).\n", (LPCSTR)m_trayID, ret.cx, ret.cy);
+    return ret;
+    //return CDockablePane::CalcAvailableSize(rectRequired);
+}
+
+CSize CDockTrayPalette::CalcSize(BOOL bVertDock)
+{
+    ATLTRACE2(traceAppMsg, 0, "CDockTrayPalette%s::CalcSize(bVertDock=%u) called...\n", (LPCSTR)m_trayID, bVertDock);
+    CSize ret = CDockablePane::CalcSize(bVertDock);
+    ATLTRACE2(traceAppMsg, 0, "...CDockTrayPalette%s::CalcSize(...) returns CSize(%d, %d).\n", (LPCSTR)m_trayID, ret.cx, ret.cy);
+    return ret;
+    //return CDockablePane::CalcSize(bVertDock);
+}
+
+void CDockTrayPalette::GetMinSize(CSize& size) const
+{
+    ATLTRACE2(traceAppMsg, 0, "CDockTrayPalette%s::GetMinSize(size=CSize(%d, %d)) called...\n", (LPCSTR)m_trayID, size.cx, size.cy);
+    CDockablePane::GetMinSize(size);
+    ATLTRACE2(traceAppMsg, 0, "...CDockTrayPalette%s::GetMinSize(...) returns CSize(%d, %d).\n", (LPCSTR)m_trayID, size.cx, size.cy);
+}
+
+void CDockTrayPalette::RecalcLayout()
+{
+    ATLTRACE2(traceAppMsg, 0, "CDockTrayPalette%s::RecalcLayout called...\n", (LPCSTR)m_trayID);
+    CDockablePane::RecalcLayout();
+    ATLTRACE2(traceAppMsg, 0, "...CDockTrayPalette%s::RecalcLayout returns.\n", (LPCSTR)m_trayID);
+}
+
+void CDockTrayPalette::AdjustLayout()
+{
+    ATLTRACE2(traceAppMsg, 0, "CDockTrayPalette%s::AdjustLayout called...\n", (LPCSTR)m_trayID);
+    CDockablePane::AdjustLayout();
+    ATLTRACE2(traceAppMsg, 0, "...CDockTrayPalette%s::AdjustLayout returns.\n", (LPCSTR)m_trayID);
+}
+
+void CDockTrayPalette::OnWindowPosChanged(WINDOWPOS FAR* lpwndpos)
+{
+    ATLTRACE2(traceAppMsg, 0, "CDockTrayPalette%s::OnWindowPosChanged(x=%d, y=%d, cx=%d, cy=%d) called...\n", (LPCSTR)m_trayID,
+        lpwndpos->x, lpwndpos->y, lpwndpos->cx, lpwndpos->cy);
+    if (lpwndpos->cx > 200 || lpwndpos->cy < 100)
+        TRACE0("SOMETHING BAD HAPPENED..");
+    CDockablePane::OnWindowPosChanged(lpwndpos);
+    ATLTRACE2(traceAppMsg, 0, "...CDockTrayPalette%s::OnWindowPosChanged returns.\n", (LPCSTR)m_trayID);
+}
+
+/// ...TESTING INTERCEPTS
+

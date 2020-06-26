@@ -47,15 +47,25 @@ public:
 // Implementation
 public:
     virtual ~CDockMarkPalette();
+	
+	/// TESTING INTERCEPTS...
+	virtual CSize CalcFixedLayout(BOOL bStretch, BOOL bHorz);
+	virtual void GetMinSize(CSize& size) const;
+	virtual BOOL IsResizable() const;
+	virtual CSize CalcAvailableSize(CRect rectRequired);
+	virtual CSize CalcSize(BOOL bVertDock);
+	virtual void RecalcLayout();
+	virtual void AdjustLayout();
+	/// ...TESTING INTERCEPTS
 
     // Generated message map functions
 protected:
     afx_msg void OnDestroy();
     afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnWindowPosChanged(WINDOWPOS FAR* lpwndpos); // TESTING INTERCEPT
     DECLARE_MESSAGE_MAP()
 };
 
 /////////////////////////////////////////////////////////////////////////////
 
 #endif
-
