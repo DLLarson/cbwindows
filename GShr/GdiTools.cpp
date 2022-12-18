@@ -23,6 +23,9 @@
 //
 
 #include    "stdafx.h"
+#include    "versionhelpers.h"
+#include    "shellscalingapi.h"
+
 #include    "FrmMain.h"
 #ifdef GPLAY
 #include    "GamDoc.h"
@@ -65,14 +68,7 @@ FontID DoFontDialog(FontID fid, CWnd *pParentWnd, BOOL bScreenOK)
 
 int GetYPixelsPerLogicalInch()
 {
-    static int yPxlPerInch = 0;
-    if (yPxlPerInch == 0)
-    {
-        HDC hDC = GetDC(NULL);
-        yPxlPerInch = GetDeviceCaps(hDC, LOGPIXELSY);
-        ReleaseDC(NULL, hDC);
-    }
-    return yPxlPerInch;
+    return GetDpi(NULL);
 }
 
 int TenthPointsToScreenPixels(int nTenthPts)
@@ -93,6 +89,38 @@ int GetCurrentVideoResolution()
     CWindowDC dc(NULL);
     int nbpp = dc.GetDeviceCaps(BITSPIXEL) * dc.GetDeviceCaps(PLANES);
     return nbpp < 16 ? nbpp : 16;
+}
+
+/////////////////////////////////////////////////////////////////
+
+int GetDpi(HWND hWnd)
+{
+    // Note that you MUST have "compatibility" manifest entries
+    // in order for these API's to work. Otherwise they will return
+    // 'false' regardless of what version of Windows the program
+    // is running on. See file "GShr/OSVerSupport.manifest".
+    bool v81 = IsWindows8Point1OrGreater();
+    bool v10 = IsWindows10OrGreater();
+
+    if (v81 || v10)
+    {
+        HMONITOR hMonitor = ::MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+        UINT xdpi, ydpi;
+        LRESULT success = ::GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &xdpi, &ydpi);
+        if (success == S_OK)
+            return static_cast<int>(ydpi);
+
+        return 96;      // Standard Windows 96 DPI
+    }
+    else
+    {
+        // If the above fails then rely on original GDI support.
+        HDC hDC = ::GetDC(hWnd);
+        INT ydpi = ::GetDeviceCaps(hDC, LOGPIXELSY);
+        ::ReleaseDC(NULL, hDC);
+
+        return ydpi;
+    }
 }
 
 /////////////////////////////////////////////////////////////////

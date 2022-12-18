@@ -1,10 +1,11 @@
-// Last modified: 6/20/2020 2:38:45 PM
+// Last modified: 9/2/2023 12:17:33 PM
 #define IDH_R_MANIFEST                          0x20001
 #define IDH_R_MAINFRAME                         0x20002
 #define IDH_R_GAMEBOX                           0x20003
 #define IDH_R_BOARDVIEW                         0x20004
 #define IDH_R_BITEDITOR                         0x20005
 #define IDH_R_MENU_DESIGN_POPUPS                0x207E7
+#define IDH_HELP_RELEASES                       0x10BB9
 #define IDH_OFFSCREEN                           0x18000
 #define IDH_EDIT_COLORDLG                       0x18003
 #define IDH_VIEW_GRIDLINES                      0x18004

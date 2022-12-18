@@ -138,6 +138,9 @@ echo off
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>..\out\build\x86-Release\deps\wxWidgets\lib\vc_lib</AdditionalLibraryDirectories>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>..\GShr\OSVerSupport.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseU|x64'">
     <CustomBuildStep>
@@ -188,6 +191,9 @@ echo off
       <AdditionalLibraryDirectories>..\out\build\x64-Release\deps\wxWidgets\lib\vc_x64_lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>wxbase33u.lib;wxmsw33u_core.lib;wxpng.lib;wxzlib.lib;htmlhelp.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>..\GShr\OSVerSupport.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugU|Win32'">
     <CustomBuildStep>
@@ -239,6 +245,9 @@ echo off
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>..\out\build\x86-Debug\deps\wxWidgets\lib\vc_lib</AdditionalLibraryDirectories>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>..\GShr\OSVerSupport.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugU|x64'">
     <CustomBuildStep>
@@ -289,6 +298,9 @@ echo off
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>..\out\build\x64-Debug\deps\wxWidgets\lib\vc_x64_lib</AdditionalLibraryDirectories>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>..\GShr\OSVerSupport.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\GShr\Arclib.cpp" />

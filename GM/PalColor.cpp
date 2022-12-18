@@ -69,10 +69,10 @@ static const CB::string szEntryColorPalPos = "ColorPalPos";
 // G = Grey scale
 // C = Custom color picks
 
-const int sizeVertMargin = 4;
-const int sizeHorzMargin = 4;
+const int sizeVertMargin96dpi = 4;
+const int sizeHorzMargin96dpi = 4;
 
-const int sizeLeftInset = sizeHorzMargin + 45;
+const int sizeLeftInset96dpi = sizeHorzMargin96dpi + 45;
 
 // The constants related to the color picker area
 
@@ -83,28 +83,27 @@ const int cellCustArrayCols = 6;
 const int cellStdArraySize = cellStdArrayCols * cellArrayRows;
 const int cellCustArraySize = cellCustArrayCols * cellArrayRows;
 
-const int sizeColorCell = 9;
-const int sizeCellGap = 1;
-const int sizeGroupGap = 4;
+const int sizeColorCell96dpi = 9;
+const int sizeCellGap96dpi = 1;
+const int sizeGroupGap96dpi = 4;
 
-const int sizeColorMixWidth = 20;
-const int sizeColorBarHeight = 16;
+const int sizeColorMixWidth96dpi = 20;
+const int sizeColorBarHeight96dpi = 16;
 
 // These constants relate to items left of
 // the color picker area
 
 const int numLineWidths = 25;       // Combo line width entries
 
-const int sizeSelectCellStagger = 5;
-const int sizeLeftMarg = 45;
-const int sizeXSelectCell = 35;
-const int sizeYSelectCell = 20;
-const int sizeXTransCell = 41;
-const int sizeYTransCell = 15;
+const int sizeLeftMarg96dpi = 45;
+const int sizeXSelectCell96dpi = 35;
+const int sizeYSelectCell96dpi = 20;
+const int sizeXTransCell96dpi = 41;
+const int sizeYTransCell96dpi = 15;
 
-const int posXNoColor = 2;
-const int posYNoColor = 60;
-const int sizeXNoColor = 42;        // Y is computed from font.
+const int posXNoColor96dpi = 2;
+const int posYNoColor96dpi = 60;
+const int sizeXNoColor96dpi = 42;        // Y is computed from font.
 
 /////////////////////////////////////////////////////////////////////////////
 // Standard colors...
@@ -131,21 +130,16 @@ inline COLORREF& CellColor(COLORREF* pCref, int nCol, int nRow)
 
 BEGIN_MESSAGE_MAP(CColorPalette, CDockablePane)
     ON_WM_PAINT()
-    ON_WM_DESTROY()
     ON_WM_CREATE()
     ON_WM_LBUTTONDOWN()
     ON_WM_RBUTTONDOWN()
     ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
     ON_CBN_SELCHANGE(IDC_W_COLORPAL_LINEWIDTH, OnLineWidthCbnSelchange)
-//@@@   ON_WM_SYSCOMMAND()
     ON_WM_HELPINFO()
     ON_WM_MOUSEMOVE()
     ON_WM_LBUTTONUP()
     ON_WM_RBUTTONUP()
     ON_WM_ERASEBKGND()
-    ON_WM_NCCALCSIZE()
-    ON_WM_NCPAINT()
-    ON_WM_NCHITTEST()
     ON_WM_LBUTTONDBLCLK()
     ON_MESSAGE(WM_PALETTE_HIDE, OnPaletteHide)
 END_MESSAGE_MAP()
@@ -220,31 +214,6 @@ BOOL CColorPalette::OnEraseBkgnd(CDC* pDC)
     return TRUE;
 }
 
-void CColorPalette::OnNcPaint()
-{
-    CDockablePane::OnNcPaint();
-}
-
-void CColorPalette::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
-{
-    CDockablePane::OnNcCalcSize(bCalcValidRects, lpncsp);
-}
-
-LRESULT CColorPalette::OnNcHitTest(CPoint point)
-{
-    return CDockablePane::OnNcHitTest(point);
-}
-
-void CColorPalette::OnDestroy()
-{
-    CDockablePane::OnDestroy();
-//  // Save the current position of the palette
-//  CRect rct;
-//  GetWindowRect(&rct);
-//  m_xCurPos = rct.left;
-//  m_yCurPos = rct.top;
-}
-
 void CColorPalette::PostNcDestroy()
 {
     CDockablePane::PostNcDestroy();
@@ -311,6 +280,25 @@ void CColorPalette::SetupToolTip(CWnd* pWnd, UINT nID, UINT nFlags, const CB::st
 
 void CColorPalette::ComputeLayout()
 {
+    // Scale base dimensions for current screen's DPI...
+    nCurDpi = GetDpi(GetMainFrame()->GetSafeHwnd());
+    sizeLeftInset = MulDiv(sizeLeftInset96dpi, nCurDpi, 96);
+    sizeLeftMarg = MulDiv(sizeLeftMarg96dpi, nCurDpi, 96);
+    sizeColorCell = MulDiv(sizeColorCell96dpi, nCurDpi, 96);
+    sizeCellGap = MulDiv(sizeCellGap96dpi, nCurDpi, 96);
+    sizeGroupGap = MulDiv(sizeGroupGap96dpi, nCurDpi, 96);
+    sizeColorMixWidth = MulDiv(sizeColorMixWidth96dpi, nCurDpi, 96);
+    sizeHorzMargin = MulDiv(sizeHorzMargin96dpi, nCurDpi, 96);
+    sizeVertMargin = MulDiv(sizeVertMargin96dpi, nCurDpi, 96);
+    sizeColorBarHeight = MulDiv(sizeColorBarHeight96dpi, nCurDpi, 96);
+    posXNoColor = MulDiv(posXNoColor96dpi, nCurDpi, 96);
+    posYNoColor = MulDiv(posYNoColor96dpi, nCurDpi, 96);
+    sizeXNoColor = MulDiv(sizeXNoColor96dpi, nCurDpi, 96);
+    sizeXSelectCell = MulDiv(sizeXSelectCell96dpi, nCurDpi, 96);
+    sizeYSelectCell = MulDiv(sizeYSelectCell96dpi, nCurDpi, 96);
+    sizeXTransCell = MulDiv(sizeXTransCell96dpi, nCurDpi, 96);
+    sizeYTransCell = MulDiv(sizeYTransCell96dpi, nCurDpi, 96);
+
     // Standard color cell group...
     int x = sizeLeftInset;
     int y = sizeVertMargin;
@@ -348,8 +336,8 @@ void CColorPalette::ComputeLayout()
     m_rctNoColor.SetRect(posXNoColor, posYNoColor, posXNoColor + sizeXNoColor,
         posYNoColor + g_res.tm8ss.tmHeight + 2);
 
-    int xOffset = 2*sizeCellGap + 1;
-    int yOffset = 2*sizeCellGap + 1;
+    int xOffset = 2 * sizeCellGap + 1;
+    int yOffset = 2 * sizeCellGap + 1;
     m_rctForeColor.SetRect(xOffset, yOffset, xOffset + sizeXSelectCell,
         yOffset + sizeYSelectCell);
 
@@ -605,7 +593,6 @@ void CColorPalette::PaintCell(CDC* pDC, CRect& rct, COLORREF cref, BOOL bSelBord
         rct.InflateRect(1, 1);
     if (!pDC->RectVisible(&rct))
         return;
-
     CBrush brBlack;
     brBlack.CreateStockObject(BLACK_BRUSH);
 
@@ -710,11 +697,13 @@ void CColorPalette::SetIDColor(UINT nID, COLORREF cr)
     {
         if (cr == m_crFore) return;
         m_crFore = cr;
+        InvalidateRect(m_rctForeColor);
     }
     else if (nID == ID_COLOR_BACKGROUND)
     {
         if (cr == m_crBack) return;
         m_crBack = cr;
+        InvalidateRect(m_rctBackColor);
     }
     else if (nID == ID_COLOR_TRANSPARENT)
     {
@@ -745,7 +734,7 @@ void CColorPalette::UpdateCurrentColors(BOOL bImmediate)
 {
     CRect rct;
     GetClientRect(&rct);
-    rct.right = sizeCellGap * 2 + sizeLeftMarg - 1;
+    rct.right = sizeCellGap * 2 + sizeLeftMarg96dpi - 1;
     rct.bottom = (rct.bottom * 5) / 8;              // Miss combo box.
     InvalidateRect(&rct, FALSE);
 
@@ -936,7 +925,6 @@ void CColorPalette::NotifyCustomColorChange(COLORREF* pcrCustomColors)
 
 /////////////////////////////////////////////////////////////////////////////
 
-
 void CColorPalette::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
     if (m_rctCustColors.PtInRect(point))
@@ -1033,14 +1021,6 @@ void CColorPalette::OnLineWidthCbnSelchange()
             (WPARAM)m_comboLine.GetCurSel(), (LPARAM)0);
     }
 }
-
-//void CColorPalette::OnSysCommand(UINT nID, LPARAM lParam)
-//{
-//  if ((nID & 0xFFF0) == SC_CLOSE)
-//      GetMainFrame()->SendMessage(WM_COMMAND, ID_WINDOW_COLORPAL);
-//  else
-//      CDockablePane::OnSysCommand(nID, lParam);
-//}
 
 BOOL CColorPalette::OnHelpInfo(HELPINFO* pHelpInfo)
 {

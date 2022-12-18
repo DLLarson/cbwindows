@@ -134,6 +134,10 @@ typedef struct _DELTAGEN {
 typedef DELTAGEN *PDELTAGEN;
 
 ////////////////////////////////////////////////////////////////////
+// DPI Awareness support
+
+int GetDpi(HWND hWnd);
+
 // Some non-class GDI tools...
 
 FontID DoFontDialog(FontID fid, CWnd *pParentWnd, BOOL bScreenOK = FALSE);

@@ -1,4 +1,4 @@
-// Last modified: 6/20/2020 2:38:58 PM
+// Last modified: 9/2/2023 12:17:33 PM
 #define IDH_R_GP_MAINFRAME                      0x20010
 #define IDH_R_GSCNTYPE                          0x20011
 #define IDH_R_GAMETYPE                          0x20012
@@ -10,6 +10,8 @@
 #define IDH_R_TBAR_PLAYBACK                     0x207FD
 #define IDH_R_TBAR_VIEW                         0x20803
 #define IDH_R_TBAR_MOVE                         0x20805
+#define IDH_R_TBMENU                            0x20809
+#define IDH_HELP_RELEASES                       0x10FA0
 #define IDH_PROJITEM_DELETE                     0x18042
 #define IDH_SCN_SELPIECES                       0x19C40
 #define IDH_SCN_BOARDSEL                        0x19C41
@@ -117,6 +119,11 @@
 #define IDH_VIEW_SMALLSCALEBRD                  0x19CDC
 #define IDH_VIEW_BOARD_ROTATE180                0x19CDD
 #define IDH_FILE_CHANGE_GAME_OWNER              0x19CDE
+#define IDH_ACT_TURNOVER_PREV                   0x19CE2
+#define IDH_ACT_TURNOVER_RANDOM                 0x19CE3
+#define IDH_ACT_TURNOVER_ALL_PREV               0x19CE4
+#define IDH_ACT_TURNOVER_ALL_RANDOM             0x19CE5
+#define IDH_ACT_TURNOVER_SELECT                 0x19CE6
 #define IDH_ACT_ROTATE_0                        0x19D6C
 #define IDH_ACT_ROTATE_30                       0x19D72
 #define IDH_ACT_ROTATE_45                       0x19D75

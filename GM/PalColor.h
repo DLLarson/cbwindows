@@ -116,6 +116,26 @@ protected:
     CRect       m_rctTrans;         // Rect for transparent color selector
     CRect       m_rctNoColor;       // Rect for no color selector
 
+    // Screen scaled base dimensions of color picker area...
+
+    int nCurDpi;
+    int sizeLeftInset;
+    int sizeLeftMarg;
+    int sizeColorCell;
+    int sizeCellGap;
+    int sizeGroupGap;
+    int sizeColorMixWidth;
+    int sizeHorzMargin;
+    int sizeVertMargin;
+    int sizeColorBarHeight;
+    int posXNoColor;
+    int posYNoColor;
+    int sizeXNoColor;
+    int sizeXSelectCell;
+    int sizeYSelectCell;
+    int sizeXTransCell;
+    int sizeYTransCell;
+
     // Color picker area vars...
 
     COLORREF*   m_pCustColors;
@@ -170,7 +190,7 @@ protected:
     virtual void OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler);
     virtual CSize CalcSize(BOOL bVertDock)
     {
-        return m_sizeClient;
+        return m_sizeClient + CSize(0, GetCaptionHeight());
     }
     virtual void GetMinSize(CSize& size) const
     {

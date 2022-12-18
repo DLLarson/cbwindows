@@ -124,7 +124,7 @@ if (MSVC)
 		_AFX_SECURE_NO_WARNINGS _ATL_SECURE_NO_WARNINGS
 		_CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS
 	)
-	target_link_libraries(CBPlay htmlhelp.lib)
+	target_link_libraries(CBPlay htmlhelp.lib Shcore)
 	# Unicode MFC expects this entry point
 	target_link_options(CBPlay PRIVATE /ENTRY:wWinMainCRTStartup)
 endif()
