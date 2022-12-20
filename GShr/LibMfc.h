@@ -40,6 +40,8 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 
+void SetDpiScaledScrollSizes(CScrollView* pWnd, CSize size);
+
 HWND FindWindowForProcessID(DWORD dwProcessID);
 BOOL FindWindowForProcessIDAndBringToFront(DWORD dwProcessID);
 

@@ -1,6 +1,6 @@
 // ToolObjs.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -263,8 +263,11 @@ void CSelectTool::OnMouseMove(CBrdEditView* pView, UINT nFlags, CPoint point)
             return;
         if (m_eSelMode == smodeMove)
         {
+            // Note: The select list only returns selection rectangles
+            // based on the full size dimensions of the board. So that's
+            // what we need to check our bounderies against.
             CRect rct = pSLst->GetEnclosingRect();
-            CPoint pnt = pView->GetWorkspaceDim();
+            CPoint pnt = pView->GetFullSizeWorkspaceDim();
             if (rct.left + point.x - c_ptLast.x < 0)        // Clamp
                 point.x = c_ptLast.x - rct.left;
             if (rct.top + point.y - c_ptLast.y < 0)         // Clamp

@@ -174,7 +174,7 @@ void CBrdEditView::OnInitialUpdate()
     CScrollView::OnInitialUpdate();
     m_pBMgr = GetDocument()->GetBoardManager();
     m_pBoard = (CBoard*)GetDocument()->GetCreateParameter();
-    SetScrollSizes(MM_TEXT, m_pBoard->GetSize(m_nZoom));
+    SetDpiScaledScrollSizes(this, m_pBoard->GetSize(m_nZoom));
 }
 
 void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -199,7 +199,7 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
     {
         if (static_cast<CGmBoxHint*>(pHint)->GetArgs<HINT_BOARDPROPCHANGE>().m_pBoard == m_pBoard)
         {
-            SetScrollSizes(MM_TEXT, m_pBoard->GetSize(m_nZoom));
+            SetDpiScaledScrollSizes(this, m_pBoard->GetSize(m_nZoom));
             Invalidate(FALSE);
         }
     }
@@ -213,16 +213,25 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 void CBrdEditView::OnDraw(CDC* pDC)
 {
     CDC dcMem;
+#ifdef BILLS_MODS_WX_MODS
     CRect oRct;
     CDC* pDrawDC = pDC;
+#else
+    CBitmap bmMem;
+#endif
     CBitmap* pPrvBMap = nullptr;
+    CRect boardRct;
+    CRect clipRct;
 
-    pDC->GetClipBox(&oRct);
-    if (oRct.IsRectEmpty())
+    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
+
+    pDC->GetClipBox(&clipRct);
+    if (clipRct.IsRectEmpty())
         return;                 // Nothing to do
 
     SetupPalette(pDC);
 
+#ifdef BILLS_MODS_WX_MODS
     if (m_bOffScreen)
     {
         OwnerPtr<CBitmap> bmMem = CDib::CreateDIBSection(
@@ -246,6 +255,50 @@ void CBrdEditView::OnDraw(CDC* pDC)
     }
     if (!pDC->IsPrinting())
     {
+#else
+    // Map the DC clip rectangle to its location in board space.
+    boardRct = CRect(
+        clipRct.left / nDpiMultiple,                    // Round down...
+        clipRct.top / nDpiMultiple,
+        (clipRct.right + nDpiMultiple) / nDpiMultiple,  // Round up...
+        (clipRct.bottom + nDpiMultiple) / nDpiMultiple);
+
+    // Create an off-screen bitmap and a GDI DC for rendering the board image.
+    bmMem.Attach(Create16BitDIBSection(pDC->m_hDC, boardRct.Width(), boardRct.Height()));
+    dcMem.CreateCompatibleDC(pDC);
+    pPrvBMap = dcMem.SelectObject(&bmMem);
+
+    // Set up the coordinate system for the off-screen bitmap
+    // as we may be only rendering a portion of the overall image.
+    dcMem.SetViewportOrg(-boardRct.left, -boardRct.top);
+    dcMem.SetStretchBltMode(COLORONCOLOR);
+    SetupPalette(&dcMem);
+
+    // Render the board image.
+    m_pBoard->Draw(dcMem, boardRct, m_nZoom);
+
+    // We're done rendering the screen update. Now copy the image
+    // to the screen while possibly rescaling it for high DPI screens.
+    // Note that it's important that the target dimensions of the StretchBlt 
+    // must be an exact "nDpiMultiple" of the off-screen bitmap or 
+    // artifacts will occur. Hence the slight adjustments to the 
+    // target location and size.
+    int nAlignX = clipRct.left % nDpiMultiple;
+    int nAlignY = clipRct.top % nDpiMultiple;
+    pDC->StretchBlt(
+        clipRct.left - nAlignX, clipRct.top - nAlignY, 
+        boardRct.Width() * nDpiMultiple, boardRct.Height() * nDpiMultiple,
+        &dcMem, boardRct.left, boardRct.top, boardRct.Width(), 
+        boardRct.Height(), SRCCOPY);
+
+    ResetPalette(&dcMem);
+    dcMem.SelectObject(pPrvBMap);
+
+    if (!pDC->IsPrinting())     //@@@@@ FIND A WAY TO DITCH THIS PRINTING STUFF
+    {
+        // Render the selection rectangles and handles on top
+        // of the view.
+#endif
         PrepareScaledDC(pDC);
         m_selList.OnDraw(*pDC);
     }
@@ -283,8 +336,9 @@ void CBrdEditView::PrepareScaledDC(CDC *pDC)
     CSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     pDC->SetMapMode(MM_ANISOTROPIC);
+    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
     pDC->SetWindowExt(wsize);
-    pDC->SetViewportExt(vsize);
+    pDC->SetViewportExt(CSize(vsize.cx * nDpiMultiple, vsize.cy * nDpiMultiple));
 }
 
 void CBrdEditView::OnPrepareScaledDC(CDC *pDC)
@@ -293,57 +347,170 @@ void CBrdEditView::OnPrepareScaledDC(CDC *pDC)
     PrepareScaledDC(pDC);
 }
 
-void CBrdEditView::ClientToWorkspace(CPoint& point) const
+void CBrdEditView::DoBoardZoomScaling(CPoint& point) const
 {
-    CPoint dpnt = GetDeviceScrollPosition();
-    point += (CSize)dpnt;
     CSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScalePoint(point, wsize, vsize);
 }
 
-void CBrdEditView::ClientToWorkspace(CRect& rect) const
+void CBrdEditView::UndoBoardZoomScaling(CPoint& point) const
+{
+    CSize wsize, vsize;
+    m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
+    ScalePoint(point, vsize, wsize);
+}
+
+void CBrdEditView::DoBoardZoomScaling(CRect& point) const
+{
+    CSize wsize, vsize;
+    m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
+    ScaleRect(point, wsize, vsize);
+}
+
+void CBrdEditView::UndoBoardZoomScaling(CRect& point) const
+{
+    CSize wsize, vsize;
+    m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
+    ScaleRect(point, vsize, wsize);
+}
+
+void CBrdEditView::ClientDpiToWorkspace(CPoint& point) const
+{
+    CPoint dpnt = GetDeviceScrollPosition();
+    point += (CSize)dpnt;
+    // Adjust the point for DPI scaling
+    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
+    point.x /= nDpiMultiple;
+    point.y /= nDpiMultiple;
+}
+
+void CBrdEditView::ClientDpiToWorkspace(CRect& rect) const
 {
     CPoint dpnt = GetDeviceScrollPosition();
     rect += dpnt;
+    // Adjust the point for DPI scaling
+    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
+    rect.top /= nDpiMultiple;
+    rect.left /= nDpiMultiple;
+    rect.bottom /= nDpiMultiple;
+    rect.right /= nDpiMultiple;
+}
+
+void CBrdEditView::WorkspaceToClientDpi(CRect& rect) const
+{
+    CPoint dpnt = GetDeviceScrollPosition();
+    // Adjust the rectangle for DPI scaling
+    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
+    rect.top *= nDpiMultiple;
+    rect.left *= nDpiMultiple;
+    rect.bottom *= nDpiMultiple;
+    rect.right *= nDpiMultiple;
+    rect -= dpnt;
+}
+
+void CBrdEditView::WorkspaceToClientDpi(CPoint& point) const
+{
+    CPoint dpnt = GetDeviceScrollPosition();
+    // Adjust the point for DPI scaling
+    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
+    point.x *= nDpiMultiple;
+    point.y *= nDpiMultiple;
+    point -= (CSize)dpnt;
+}
+
+void CBrdEditView::ClientToWorkspace(CPoint& point) const
+{
+    ClientDpiToWorkspace(point);
+    DoBoardZoomScaling(point);
+#if 0
+    CPoint dpnt = GetDeviceScrollPosition();
+    point += (CSize)dpnt;
+    // Adjust the point for DPI scaling
+    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
+    point.x /= nDpiMultiple;
+    point.y /= nDpiMultiple;
+    CSize wsize, vsize;
+    m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
+    ScalePoint(point, wsize, vsize);
+#endif
+}
+
+void CBrdEditView::ClientToWorkspace(CRect& rect) const
+{
+    ClientDpiToWorkspace(rect);
+    DoBoardZoomScaling(rect);
+#if 0
+    CPoint dpnt = GetDeviceScrollPosition();
+    rect += dpnt;
+    // Adjust the point for DPI scaling
+    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
+    rect.top /= nDpiMultiple;
+    rect.left /= nDpiMultiple;
+    rect.bottom /= nDpiMultiple;
+    rect.right /= nDpiMultiple;
     CSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScaleRect(rect, wsize, vsize);
+#endif
 }
 
 void CBrdEditView::WorkspaceToClient(CPoint& point) const
 {
+    DoBoardZoomScaling(point);
+    WorkspaceToClientDpi(point);
+#if 0
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScalePoint(point, vsize, wsize);
+    // Adjust the point for DPI scaling
+    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
+    point.x *= nDpiMultiple;
+    point.y *= nDpiMultiple;
     point -= (CSize)dpnt;
+#endif
 }
 
 void CBrdEditView::WorkspaceToClient(CRect& rect) const
 {
+    DoBoardZoomScaling(rect);
+    WorkspaceToClientDpi(rect);
+#if 0
     CPoint dpnt = GetDeviceScrollPosition();
     CSize wsize, vsize;
     m_pBoard->GetBoardArray().GetBoardScaling(m_nZoom, wsize, vsize);
     ScaleRect(rect, vsize, wsize);
+    // Adjust the rectangle for DPI scaling
+    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
+    rect.top *= nDpiMultiple;
+    rect.left *= nDpiMultiple;
+    rect.bottom *= nDpiMultiple;
+    rect.right *= nDpiMultiple;
     rect -= dpnt;
+#endif
 }
 
 void CBrdEditView::InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase)
 {
     CRect rct(pRect);
-    WorkspaceToClient(rct);
-    rct.InflateRect(1, 1);
+//@@@@@    WorkspaceToClient(rct);
+    WorkspaceToClientDpi(rct);   //@@@@@
+    // Adjust the point for DPI scaling
+    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
+    rct.InflateRect(1 * nDpiMultiple, 1 * nDpiMultiple);
     InvalidateRect(&rct, bErase);
 }
 
 CPoint CBrdEditView::GetWorkspaceDim()
 {
-    // First get MM_TEXT size of board for this scaling mode.
     CPoint pnt = (CPoint)m_pBoard->GetSize(m_nZoom);
-    // Translate to current scaling mode.
-    pnt -= (CSize)GetDeviceScrollPosition();
-    ClientToWorkspace(pnt);
+    return pnt;
+}
+
+CPoint CBrdEditView::GetFullSizeWorkspaceDim()
+{
+    CPoint pnt = (CPoint)m_pBoard->GetSize(TileScale::fullScale);
     return pnt;
 }
 
@@ -486,10 +653,10 @@ void CBrdEditView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
     // TODO: add extra initialization before printing
 }
 
-void CBrdEditView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo)
+void CBrdEditView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo) //@@@@@ DELETE THIS?
 {
     CScrollView::OnPrepareDC(pDC, pInfo);
-//  if (pInfo != NULL)
+//  if (pInfo != NULL)          //@@@@@ DELETE THIS?
 //  {
 //      CDC* pScrnDC = GetDC();
 //      pDC->SetMapMode(MM_ANISOTROPIC);
@@ -627,7 +794,8 @@ void CBrdEditView::OnLButtonDown(UINT nFlags, CPoint point)
         return;
     }
     CTool& pTool = CTool::GetTool(eToolType);
-    ClientToWorkspace(point);
+//@@@@@    ClientToWorkspace(point);
+    ClientDpiToWorkspace(point);    //@@@@@
     pTool.OnLButtonDown(this, nFlags, point);
 }
 
@@ -640,7 +808,8 @@ void CBrdEditView::OnMouseMove(UINT nFlags, CPoint point)
         return;
     }
     CTool& pTool = CTool::GetTool(eToolType);
-    ClientToWorkspace(point);
+    //@@@@@    ClientToWorkspace(point);
+    ClientDpiToWorkspace(point);    //@@@@@
     pTool.OnMouseMove(this, nFlags, point);
 }
 
@@ -653,7 +822,8 @@ void CBrdEditView::OnLButtonUp(UINT nFlags, CPoint point)
         return;
     }
     CTool& pTool = CTool::GetTool(eToolType);
-    ClientToWorkspace(point);
+    //@@@@@    ClientToWorkspace(point);
+    ClientDpiToWorkspace(point);    //@@@@@
     pTool.OnLButtonUp(this, nFlags, point);
 }
 
@@ -666,7 +836,8 @@ void CBrdEditView::OnLButtonDblClk(UINT nFlags, CPoint point)
         return;
     }
     CTool& pTool = CTool::GetTool(eToolType);
-    ClientToWorkspace(point);
+    //@@@@@    ClientToWorkspace(point);
+    ClientDpiToWorkspace(point);    //@@@@@
     pTool.OnLButtonDblClk(this, nFlags, point);
 }
 
@@ -951,8 +1122,8 @@ void CBrdEditView::SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate)
 
     CBoardArray& pBa = m_pBoard->GetBoardArray();
 
-    WorkspaceToClient(pnt);
-    pnt += (CSize)GetDeviceScrollPosition();
+    //WorkspaceToClient(pnt);
+    //pnt += (CSize)GetDeviceScrollPosition();
 
     if (!pBa.FindCell(pnt.x, pnt.y, row, col, m_nZoom))
         return;                                 // Not a valid cell hit
@@ -962,7 +1133,9 @@ void CBrdEditView::SetCellTile(TileID tid, CPoint pnt, BOOL bUpdate)
         if (bUpdate)
         {
             CRect rct = pBa.GetCellRect(row, col, m_nZoom);// In board coords
-            rct -= GetDeviceScrollPosition();
+            //rct -= GetDeviceScrollPosition();
+            // Convert to client coordinates and invalidate.
+            WorkspaceToClientDpi(rct);
             InvalidateRect(&rct, FALSE);
         }
         GetDocument()->SetModifiedFlag();
@@ -974,8 +1147,8 @@ void CBrdEditView::SetCellColor(COLORREF crCell, CPoint pnt, BOOL bUpdate)
     size_t row, col;
 
     CBoardArray& pBa = m_pBoard->GetBoardArray();
-    WorkspaceToClient(pnt);
-    pnt += (CSize)GetDeviceScrollPosition();
+    //WorkspaceToClient(pnt);
+    //pnt += (CSize)GetDeviceScrollPosition();
 
     if (!pBa.FindCell(pnt.x, pnt.y, row, col, m_nZoom))
         return;                                 // Not a valid cell hit
@@ -984,8 +1157,10 @@ void CBrdEditView::SetCellColor(COLORREF crCell, CPoint pnt, BOOL bUpdate)
         pBa.SetCellColor(row, col, crCell);
         if (bUpdate)
         {
-            CRect rct = pBa.GetCellRect(row, col, m_nZoom);// In board coords
-            rct -= GetDeviceScrollPosition();
+            CRect rct = pBa.GetCellRect(row, col, m_nZoom); // In board coords
+            //rct -= GetDeviceScrollPosition();
+            // Convert to client coordinates and invalidate.
+            WorkspaceToClientDpi(rct);
             InvalidateRect(&rct, FALSE);
         }
         GetDocument()->SetModifiedFlag();
@@ -1461,7 +1636,7 @@ void CBrdEditView::DoViewScale(TileScale nZoom)
     ClientToWorkspace(pntMid);
 
     m_nZoom = nZoom;
-    SetScrollSizes(MM_TEXT, m_pBoard->GetSize(m_nZoom));
+    SetDpiScaledScrollSizes(this, m_pBoard->GetSize(m_nZoom));
     BeginWaitCursor();
     Invalidate(FALSE);
     CenterViewOnWorkspacePoint(pntMid);

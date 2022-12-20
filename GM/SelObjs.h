@@ -1,7 +1,7 @@
 // SelObjs.h -- contains class definitions for selection proxies. Used
 //  in concert with the selection tool.
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2022 By Dale L. Larson, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -63,13 +63,13 @@ class CSelection
 public:
     CSelection(CBrdEditView& pView, CDrawObj& pObj)
         : m_pView (&pView), m_pObj (&pObj), m_rect (pObj.GetRect())     //DFM19991221
-    {}                                                                 //DFM19991221
+    {}                                                                  //DFM19991221
     virtual ~CSelection() {}
 
 // Attributes
 public:
-    RefPtr<CDrawObj> m_pObj;           // Associated object that is selected
-    CRect     m_rect;           // Enclosing rect for selected object
+    RefPtr<CDrawObj> m_pObj;            // Associated object that is selected
+    CRect     m_rect;                   // Enclosing rect for selected object
 
     virtual HCURSOR GetHandleCursor(int nHandle) const /* override */
         { return AfxGetApp()->LoadStandardCursor(IDC_ARROW); }

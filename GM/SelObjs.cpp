@@ -1,6 +1,6 @@
 // SelObjs.cpp
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2022 By Dale L. Larson, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -29,6 +29,7 @@
 #include    "DrawObj.h"
 #include    "SelObjs.h"
 #include    "VwEdtbrd.h"
+#include    "FrmMain.h"
 #include    "ClipBrd.h"
 
 #ifdef _DEBUG
@@ -47,10 +48,10 @@ const int handleHalfWidth = 3;
 /////////////////////////////////////////////////////////////////////
 // Class level variables
 
-CPen    NEAR CSelection::c_penDot(PS_DOT, 1, RGB(0,0,0));
-int     NEAR CSelection::c_nPrvROP2;
-CPen*   NEAR CSelection::c_pPrvPen = NULL;
-CBrush* NEAR CSelection::c_pPrvBrush = NULL;
+CPen    CSelection::c_penDot(PS_DOT, 0, RGB(0, 0, 0));
+int     CSelection::c_nPrvROP2;
+CPen*   CSelection::c_pPrvPen = NULL;
+CBrush* CSelection::c_pPrvBrush = NULL;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -100,12 +101,15 @@ CRect CSelection::GetHandleRect(int nHandleID) const
     CPoint point = GetHandleLoc(nHandleID);
 
     // Convert point to client coords
-    m_pView->WorkspaceToClient(point);
+    m_pView->WorkspaceToClientDpi(point);       //@@@@@
 
     // Calc CRect of handle in device coords
-    CRect rect(point.x-3, point.y-3, point.x+3, point.y+3);
+    int nDpiMultiple = GetClosestDpiMultiple(GetMainFrame()->GetSafeHwnd());
+    int halfSizeClient = handleHalfWidth * nDpiMultiple;
+    CRect rect(point.x - halfSizeClient, point.y - halfSizeClient, 
+        point.x + halfSizeClient, point.y + halfSizeClient);
 
-    m_pView->ClientToWorkspace(rect);
+    m_pView->ClientDpiToWorkspace(rect);        //@@@@@
 
     return rect;
 }

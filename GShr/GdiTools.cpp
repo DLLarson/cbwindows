@@ -95,6 +95,8 @@ int GetCurrentVideoResolution()
 
 int GetDpi(HWND hWnd)
 {
+    return 96 * 3;
+#if 0
     // Note that you MUST have "compatibility" manifest entries
     // in order for these API's to work. Otherwise they will return
     // 'false' regardless of what version of Windows the program
@@ -121,6 +123,13 @@ int GetDpi(HWND hWnd)
 
         return ydpi;
     }
+#endif
+}
+
+int GetClosestDpiMultiple(HWND hWnd)
+{
+    int nDpiMultiple = static_cast<int>(round(float(GetDpi(hWnd)) / 96));
+    return std::max(1, nDpiMultiple);
 }
 
 /////////////////////////////////////////////////////////////////

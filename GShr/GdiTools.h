@@ -137,6 +137,7 @@ typedef DELTAGEN *PDELTAGEN;
 // DPI Awareness support
 
 int GetDpi(HWND hWnd);
+int GetClosestDpiMultiple(HWND hWnd);
 
 // Some non-class GDI tools...
 

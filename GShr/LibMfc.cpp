@@ -25,6 +25,7 @@
 #include    "stdafx.h"
 #include    <WTYPES.H>
 
+#include    "GdiTools.h"
 #include    "LibMfc.h"
 
 #ifdef _DEBUG
@@ -35,6 +36,15 @@ static char THIS_FILE[] = __FILE__;
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+/////////////////////////////////////////////////////////////////////////////
+// DPI Awareness Support
+
+void SetDpiScaledScrollSizes(CScrollView* pWnd, CSize size)
+{
+    int nDpiMultiple = GetClosestDpiMultiple(pWnd->GetSafeHwnd());
+    pWnd->SetScrollSizes(MM_TEXT, CSize(size.cx * nDpiMultiple, size.cy * nDpiMultiple));
+}
 
 /////////////////////////////////////////////////////////////////////////////
 

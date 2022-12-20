@@ -1,6 +1,6 @@
 // VwEdtbrd.h : interface of the CBrdEditView class
 //
-// Copyright (c) 1994-2020 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -85,12 +85,24 @@ public:
 
     CSelList* GetSelectList() { return &m_selList; }
 
+
+    void DoBoardZoomScaling(CPoint& point) const;
+    void UndoBoardZoomScaling(CPoint& point) const;
+    void DoBoardZoomScaling(CRect& point) const;
+    void UndoBoardZoomScaling(CRect& point) const;
+
+    void ClientDpiToWorkspace(CPoint& point) const;
+    void ClientDpiToWorkspace(CRect& rect) const;
+    void WorkspaceToClientDpi(CPoint& point) const;
+    void WorkspaceToClientDpi(CRect& rect) const;
+
     void ClientToWorkspace(CPoint& point) const;
     void ClientToWorkspace(CRect& rect) const;
     void WorkspaceToClient(CPoint& point) const;
     void WorkspaceToClient(CRect& rect) const;
     void InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase = FALSE);
     CPoint GetWorkspaceDim();
+    CPoint GetFullSizeWorkspaceDim();
     void OnPrepareScaledDC(CDC *pDC);
 
     void AdjustPoint(CPoint& pnt);              // Limit and grid processing
