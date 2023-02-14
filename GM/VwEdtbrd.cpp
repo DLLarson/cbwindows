@@ -497,8 +497,9 @@ void CBrdEditView::InvalidateWorkspaceRect(const CRect* pRect, BOOL bErase)
 //@@@@@    WorkspaceToClient(rct);
     WorkspaceToClientDpi(rct);   //@@@@@
     // Adjust the point for DPI scaling
-    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
-    rct.InflateRect(1 * nDpiMultiple, 1 * nDpiMultiple);
+//@@@@@    int nDpiMultiple = GetClosestDpiMultiple(this->GetSafeHwnd());
+//@@@@@    rct.InflateRect(1 * nDpiMultiple, 1 * nDpiMultiple);
+    rct.InflateRect(1, 1);      //@@@@@
     InvalidateRect(&rct, bErase);
 }
 
@@ -1630,6 +1631,8 @@ void CBrdEditView::CenterViewOnWorkspacePoint(CPoint point)
 
 void CBrdEditView::DoViewScale(TileScale nZoom)
 {
+    // TODO: Fix this lame approach to zooming the view's
+    // TODO: center location to something smarter.
     CRect rctClient;
     GetClientRect(&rctClient);
     CPoint pntMid = rctClient.CenterPoint();

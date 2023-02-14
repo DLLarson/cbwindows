@@ -1,7 +1,7 @@
 // SelObjs.h -- contains class definitions for selection proxies. Used
 //  in concert with the selection tool.
 //
-// Copyright (c) 1994-2022 By Dale L. Larson, All Rights Reserved.
+// Copyright (c) 1994-2023 By Dale L. Larson, All Rights Reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -69,7 +69,10 @@ public:
 // Attributes
 public:
     RefPtr<CDrawObj> m_pObj;            // Associated object that is selected
-    CRect     m_rect;                   // Enclosing rect for selected object
+    // Enclosing rect for selected object in full size 
+    // board coordinates. This is true regardless of 
+    // the board zoom level currently in use.
+    CRect     m_rect;
 
     virtual HCURSOR GetHandleCursor(int nHandle) const /* override */
         { return AfxGetApp()->LoadStandardCursor(IDC_ARROW); }

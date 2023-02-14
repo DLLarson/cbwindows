@@ -141,6 +141,7 @@ echo off
     </Link>
     <Manifest>
       <AdditionalManifestFiles>..\GShr\OSVerSupport.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugU|x64'">
@@ -196,6 +197,7 @@ echo off
     </Link>
     <Manifest>
       <AdditionalManifestFiles>..\GShr\OSVerSupport.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseU|Win32'">
@@ -249,6 +251,7 @@ echo off
     </Link>
     <Manifest>
       <AdditionalManifestFiles>..\GShr\OSVerSupport.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseU|x64'">
@@ -301,6 +304,7 @@ echo off
     </Link>
     <Manifest>
       <AdditionalManifestFiles>..\GShr\OSVerSupport.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>

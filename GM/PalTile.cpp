@@ -88,6 +88,9 @@ int CTilePalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
     GetClientRect(&rctCombo);
     rctCombo.bottom = 5 * g_res.tm8ssb.tmHeight;
 
+    //@@@@@ DPI_AWARENESS_CONTEXT dpiDefaultAware = GetThreadDpiAwarenessContext();
+    //@@@@@ BOOL bGDIScaled = IsValidDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
+
     if (!m_comboTGrp.Create(
         WS_CHILD | WS_VSCROLL | WS_VISIBLE | WS_TABSTOP | CBS_DROPDOWNLIST,
         rctCombo, this, IDC_W_TPAL_TSETS))
@@ -107,6 +110,7 @@ int CTilePalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
     CRect rctLBox;
     GetClientRect(&rctLBox);
     rctLBox.top = rctCombo.Height() - 1;
+    //@@@@@DPI_AWARENESS_CONTEXT prevDpiVal = SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
 
     if (!m_listTile.Create(
         WS_CHILD | WS_BORDER | WS_VISIBLE | WS_VSCROLL |
@@ -114,8 +118,10 @@ int CTilePalette::OnCreate(LPCREATESTRUCT lpCreateStruct)
         rctLBox, this, 0))
     {
         TRACE("Failed to create Tile list box.\n");
+        //@@@@@DPI_AWARENESS_CONTEXT rcDpi = SetThreadDpiAwarenessContext(prevDpiVal);
         return -1;
     }
+    //@@@@@DPI_AWARENESS_CONTEXT rcDpi = SetThreadDpiAwarenessContext(prevDpiVal);
     m_listTile.ModifyStyleEx(0, WS_EX_CLIENTEDGE);
 
     return 0;
