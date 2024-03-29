@@ -213,7 +213,7 @@ void CBrdEditView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 void CBrdEditView::OnDraw(CDC* pDC)
 {
     CDC dcMem;
-#ifdef BILLS_MODS_WX_MODS
+#ifndef DALES_HIDPI_MODS
     CRect oRct;
     CDC* pDrawDC = pDC;
 #else
@@ -231,7 +231,7 @@ void CBrdEditView::OnDraw(CDC* pDC)
 
     SetupPalette(pDC);
 
-#ifdef BILLS_MODS_WX_MODS
+#ifndef DALES_HIDPI_MODS
     if (m_bOffScreen)
     {
         OwnerPtr<CBitmap> bmMem = CDib::CreateDIBSection(
@@ -279,16 +279,16 @@ void CBrdEditView::OnDraw(CDC* pDC)
 
     // We're done rendering the screen update. Now copy the image
     // to the screen while possibly rescaling it for high DPI screens.
-    // Note that it's important that the target dimensions of the StretchBlt 
-    // must be an exact "nDpiMultiple" of the off-screen bitmap or 
-    // artifacts will occur. Hence the slight adjustments to the 
+    // Note that it's important that the target dimensions of the StretchBlt
+    // must be an exact "nDpiMultiple" of the off-screen bitmap or
+    // artifacts will occur. Hence the slight adjustments to the
     // target location and size.
     int nAlignX = clipRct.left % nDpiMultiple;
     int nAlignY = clipRct.top % nDpiMultiple;
     pDC->StretchBlt(
-        clipRct.left - nAlignX, clipRct.top - nAlignY, 
+        clipRct.left - nAlignX, clipRct.top - nAlignY,
         boardRct.Width() * nDpiMultiple, boardRct.Height() * nDpiMultiple,
-        &dcMem, boardRct.left, boardRct.top, boardRct.Width(), 
+        &dcMem, boardRct.left, boardRct.top, boardRct.Width(),
         boardRct.Height(), SRCCOPY);
 
     ResetPalette(&dcMem);
